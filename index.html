@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algebra Builds Physics — A Guided Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --paper: #faf8f4;
+    --accent: #c0392b;
+    --accent2: #2c3e80;
+    --accent3: #1a7a5a;
+    --gold: #b8860b;
+    --muted: #6b7280;
+    --light-bg: #f0ede6;
+    --card-bg: #ffffff;
+    --border: #d4cfc4;
+    --highlight: #fef3c7;
+    --physics-blue: #1e3a5f;
+    --cosmos-purple: #2d1b4e;
+    --quantum-teal: #0d4f4f;
+    --thermo-orange: #8b3a00;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(44, 62, 128, 0.12); }
+    50% { box-shadow: 0 0 18px 3px rgba(44, 62, 128, 0.08); }
+  }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.72;
+    font-size: 17.5px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    background: linear-gradient(165deg, var(--physics-blue) 0%, var(--cosmos-purple) 45%, var(--quantum-teal) 100%);
+    color: #fff;
+    padding: 4.5rem 2rem 3.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1px 1px at 60% 20%, rgba(255,255,255,0.25), transparent),
+      radial-gradient(1.2px 1.2px at 80% 70%, rgba(255,255,255,0.2), transparent),
+      radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(0.8px 0.8px at 10% 60%, rgba(255,255,255,0.2), transparent),
+      radial-gradient(1.3px 1.3px at 90% 40%, rgba(255,255,255,0.25), transparent);
+    background-size: 250px 200px, 300px 280px, 200px 250px, 350px 300px, 280px 220px, 180px 300px;
+    opacity: 0.7;
+  }
+  .hero-inner {
+    max-width: 780px;
+    margin: 0 auto;
+    position: relative; z-index: 1;
+    animation: fadeUp 0.8s ease-out;
+  }
+  .hero-kicker {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 0.75rem;
+  }
+  .hero h1 em { font-style: italic; color: #fbbf24; }
+  .hero .subtitle {
+    font-size: 1.15rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.8);
+    max-width: 620px;
+    line-height: 1.6;
+  }
+  .hero-meta {
+    margin-top: 2rem;
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.55);
+  }
+  .hero-fields {
+    margin-top: 1.2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .hero-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .hero-field-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+  }
+  .hero-input {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    border-bottom: 2px solid rgba(255,255,255,0.5);
+    border-radius: 0;
+    padding: 0.5rem 0.6rem 0.35rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.05rem;
+    color: #fff;
+    outline: none;
+    min-width: 200px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .hero-input::placeholder { color: rgba(255,255,255,0.4); font-style: italic; }
+  .hero-input:focus {
+    background: rgba(255,255,255,0.22);
+    border-bottom-color: #fbbf24;
+  }
+  /* date input colour fix */
+  .hero-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(2);
+    cursor: pointer;
+  }
+  .hero-input[type="date"] {
+    min-width: 160px;
+  }
+
+  /* ─── MAIN ─── */
+  .main-content {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  /* ─── PART HEADERS ─── */
+  .part-header {
+    margin: 3.5rem 0 1.5rem;
+    padding: 2rem 0 1rem;
+    border-top: 3px solid var(--ink);
+  }
+  .part-header .part-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .part-header h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  /* ─── PREAMBLE ─── */
+  .preamble {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent2);
+    border-radius: 2px 8px 8px 2px;
+    padding: 1.75rem 2rem;
+    margin: 1.5rem 0;
+  }
+  .preamble.thermo { border-left-color: var(--thermo-orange); }
+  .preamble.cosmos { border-left-color: var(--cosmos-purple); }
+  .preamble.quantum { border-left-color: var(--quantum-teal); }
+  .preamble.gravity { border-left-color: var(--accent2); }
+  .preamble.geometry { border-left-color: var(--gold); }
+  .preamble.toolkit { border-left-color: var(--accent3); }
+
+  .preamble h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  .preamble p { margin-bottom: 0.85rem; color: #333; }
+  .preamble p:last-child { margin-bottom: 0; }
+
+  /* ─── FIGURE / ASIDE ─── */
+  .figure-box {
+    background: var(--light-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.25rem 0;
+  }
+  .figure-box .caption {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  .aside-note {
+    background: var(--highlight);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+    border-left: 3px solid var(--gold);
+  }
+  .aside-note strong { color: var(--gold); }
+
+  /* ─── EQUATIONS ─── */
+  .eq {
+    text-align: center;
+    padding: 0.8rem 0;
+    font-size: 1.1rem;
+    line-height: 2;
+  }
+  .eq-box {
+    background: linear-gradient(135deg, #faf8f4, #f5f0e8);
+    border: 2px solid var(--accent2);
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+    margin: 1.25rem auto;
+    max-width: 520px;
+    text-align: center;
+    font-size: 1.15rem;
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+
+  /* ─── TASK BLOCKS ─── */
+  .task {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem 1.75rem;
+    margin: 1.5rem 0;
+    position: relative;
+  }
+  .task::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--accent);
+    border-radius: 8px 0 0 8px;
+  }
+  .task-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+  .task h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+  }
+  .task p, .task ol, .task ul { margin-bottom: 0.7rem; color: #333; }
+  .task ol, .task ul { padding-left: 1.5rem; }
+  .task li { margin-bottom: 0.5rem; }
+
+  /* ─── EDITABLE ANSWER AREAS ─── */
+  .answer-area {
+    border: 1.5px solid #c4bfb4;
+    border-radius: 6px;
+    margin: 0.75rem 0;
+    overflow: hidden;
+    background: #fff;
+    transition: border-color 0.2s;
+  }
+  .answer-area:focus-within {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(44, 62, 128, 0.08);
+  }
+  .answer-area-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #aaa;
+    padding: 0.5rem 0.9rem 0;
+    user-select: none;
+  }
+  .answer-area textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: vertical;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    padding: 0.4rem 0.9rem 0.7rem;
+    color: var(--ink);
+    background: transparent;
+  }
+  .answer-area textarea::placeholder {
+    color: #c8c3b8;
+    font-style: italic;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .answer-area textarea.short { min-height: 60px; }
+  .answer-area textarea.medium { min-height: 110px; }
+  .answer-area textarea.tall { min-height: 170px; }
+
+  /* ─── WORKED EXAMPLE ─── */
+  .worked {
+    background: linear-gradient(135deg, #eef4ed, #f4f8f2);
+    border: 1px solid #b8d4b0;
+    border-left: 4px solid var(--accent3);
+    border-radius: 2px 8px 8px 2px;
+    padding: 1.5rem 1.75rem;
+    margin: 1.25rem 0;
+  }
+  .worked-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+  .worked h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--accent3);
+  }
+  .worked p { margin-bottom: 0.6rem; }
+
+  /* ─── CONSTANTS TABLE ─── */
+  .constants-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+  .constants-table th {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .constants-table td {
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .constants-table tr:last-child td { border-bottom: none; }
+  .constants-table .sym { font-weight: 600; }
+
+  /* ─── MATRIX DISPLAY (CSS Grid) ─── */
+  .matrix-eq {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1.2rem 0;
+    flex-wrap: wrap;
+  }
+  .matrix {
+    display: inline-grid;
+    gap: 0;
+    border-left: 2.5px solid var(--ink);
+    border-right: 2.5px solid var(--ink);
+    border-radius: 3px;
+    padding: 0.35rem 0.6rem;
+    position: relative;
+  }
+  .matrix::before, .matrix::after {
+    content: '';
+    position: absolute;
+    width: 7px;
+    height: 100%;
+    top: 0;
+    border: 2.5px solid var(--ink);
+    border-radius: 3px;
+  }
+  .matrix::before {
+    left: -2.5px;
+    border-right: none;
+  }
+  .matrix::after {
+    right: -2.5px;
+    border-left: none;
+  }
+  .matrix.m2x2 { grid-template-columns: 1fr 1fr; }
+  .matrix.m2x1 { grid-template-columns: 1fr; }
+  .matrix .cell {
+    text-align: center;
+    padding: 0.2rem 0.5rem;
+    font-size: 1.05rem;
+    min-width: 2rem;
+  }
+  .matrix-op {
+    font-size: 1.2rem;
+    padding: 0 0.15rem;
+    color: var(--ink);
+  }
+
+  /* ─── Editable matrix cells ─── */
+  .matrix .cell-input {
+    text-align: center;
+    width: 2.8rem;
+    padding: 0.2rem 0.1rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.05rem;
+    border: none;
+    border-bottom: 1.5px dashed #bbb;
+    background: transparent;
+    outline: none;
+    color: var(--accent);
+  }
+  .matrix .cell-input:focus {
+    border-bottom-color: var(--accent2);
+    background: rgba(44, 62, 128, 0.04);
+  }
+
+  /* ─── COLLAPSIBLE HINTS ─── */
+  details {
+    margin: 0.75rem 0;
+    background: #f9f7f2;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  details summary {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    color: var(--accent2);
+    user-select: none;
+  }
+  details summary:hover { background: #f0ede6; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  details .hint-content {
+    padding: 1rem 1.25rem;
+    font-size: 0.93rem;
+    color: #444;
+  }
+
+  /* ─── DIAGRAM CONTAINER ─── */
+  .diagram-container {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.25rem 0;
+    text-align: center;
+  }
+  .diagram-container svg { max-width: 100%; height: auto; }
+
+  /* ─── SEPARATOR ─── */
+  .section-sep {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 2.5rem 0;
+  }
+
+  /* ─── UNIT NOTATION ─── */
+  .unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: #f0ede6;
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  /* ─── EXPONENT EXAMPLE TABLE ─── */
+  .law-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin: 1rem 0;
+  }
+  .law-card {
+    background: var(--light-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    text-align: center;
+  }
+  .law-card .law-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .law-card .law-eq { font-size: 1.05rem; }
+
+  /* ─── PRINT / PDF STYLES ─── */
+  /* Mirror divs: hidden on screen, shown in print */
+  .print-mirror {
+    display: none !important;
+  }
+  body.printing .print-mirror {
+    display: block !important;
+  }
+  body.printing textarea {
+    display: none !important;
+  }
+
+  @media print {
+    body {
+      font-size: 14px;
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 1.5rem 1.5rem 1.2rem;
+      background: var(--physics-blue) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .hero::before { display: none; }
+    .hero h1 { font-size: 1.5rem; }
+    .hero .subtitle { font-size: 0.88rem; }
+    .hero-input {
+      background: transparent !important;
+      border: none !important;
+      border-bottom: 1px solid rgba(255,255,255,0.5) !important;
+      border-radius: 0;
+      padding-left: 0.2rem;
+      color: #fff !important;
+    }
+
+    /* ── Each Part starts a new page ── */
+    .part-header {
+      page-break-before: always;
+      break-before: page;
+      margin-top: 0.5rem;
+      padding-top: 0.8rem;
+    }
+
+    /* ── Never split these across pages ── */
+    .preamble,
+    .task,
+    .worked,
+    .aside-note,
+    .figure-box,
+    .diagram-container,
+    .answer-area,
+    .matrix-eq,
+    .eq-box,
+    .law-grid,
+    .constants-table {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+    .task { orphans: 4; widows: 3; }
+
+    /* ── Textareas: hide originals, show mirrors ── */
+    textarea {
+      display: none !important;
+    }
+    .print-mirror {
+      display: block !important;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      padding: 0.5rem 0.9rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: #1a1a2e;
+      min-height: 60px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fafafa !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .print-mirror:empty {
+      min-height: 60px;
+    }
+
+    /* ── Input fields ── */
+    input[type="text"], .cell-input {
+      border-bottom: 1px solid #999 !important;
+      color: #1a1a2e !important;
+    }
+
+    /* ── Hide the PDF button ── */
+    .pdf-btn-container { display: none !important; }
+
+    /* ── Hints: keep collapsed ── */
+    details summary { color: #666; }
+    details .hint-content { display: none; }
+    details[open] .hint-content { display: block; font-size: 0.82rem; }
+
+    /* ── Tighter spacing for A4 ── */
+    .section-sep { margin: 1rem 0; }
+    .main-content { padding: 0 0.5rem 2rem; }
+    .preamble, .task, .worked { padding: 1.1rem 1.3rem; margin: 0.8rem 0; }
+
+    /* ── Colour preservation ── */
+    .law-card, .eq-box, .preamble, .worked, .aside-note,
+    .task::before {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Table rows ── */
+    .constants-table { break-inside: avoid; page-break-inside: avoid; }
+    .constants-table tr { break-inside: avoid; }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    body { font-size: 16px; }
+    .hero { padding: 3rem 1.25rem 2.5rem; }
+    .hero h1 { font-size: 1.75rem; }
+    .preamble, .task, .worked { padding: 1.25rem; }
+    .main-content { padding: 0 1rem 3rem; }
+    .law-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ─── SCALE DOTS ─── */
+  .scale-visual {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 2rem;
+    margin: 1rem 0;
+    position: relative;
+  }
+  .scale-visual::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 8%; right: 8%;
+    height: 2px;
+    background: var(--border);
+  }
+  .scale-dot {
+    position: relative; z-index: 1;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+  }
+  .scale-dot .dot {
+    width: 10px; height: 10px;
+    background: var(--accent2);
+    border-radius: 50%;
+    margin: 0 auto 0.3rem;
+  }
+  .scale-dot.highlight .dot { background: var(--accent); width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════ HERO ════════════════════════════ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-kicker">Year 11 · GCSE Enrichment Walkthrough</div>
+    <h1>Algebra Builds Physics:<br><em>Dimensional Analysis</em> &amp; Matrices</h1>
+    <p class="subtitle">Treat units like algebraic symbols. Solve simultaneous equations. Discover the shape of nature's laws — from thermal radiation to black holes — using nothing but indices and logic.</p>
+    <div class="hero-meta">
+      <span>Dwight School London — Natural Sciences</span>
+    </div>
+    <div class="hero-fields">
+      <label class="hero-field">
+        <span class="hero-field-label">Name</span>
+        <input type="text" class="hero-input" id="studentName" placeholder="Your name…">
+      </label>
+      <label class="hero-field">
+        <span class="hero-field-label">Date</span>
+        <input type="date" class="hero-input" id="studentDate">
+      </label>
+    </div>
+  </div>
+</header>
+
+<div class="main-content">
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- ROADMAP — CONSTANTS WE WILL MEET -->
+<!-- ════════════════════════════════════════════════ -->
+<section style="margin-top: 2.5rem;">
+  <p>
+    Every equation in physics must be <strong>dimensionally consistent</strong>: the left side and the right side must carry the same combination of mass, length, time, and any other base quantity. This isn't a technicality — it is a <em>constraint so powerful</em> that it can tell you the shape of formulas before you derive them.
+  </p>
+  <p>
+    We use the symbols <span class="unit">[M]</span> for mass, <span class="unit">[L]</span> for length, <span class="unit">[T]</span> for time, and <span class="unit">[Θ]</span> for temperature. In this worksheet we will determine the dimensions of each of the following constants — then combine them to discover a fundamental length scale at the frontier of physics.
+  </p>
+</section>
+
+<div class="figure-box" style="margin-top:1.5rem; text-align:left;">
+  <table class="constants-table">
+    <tr><th>Symbol</th><th>Name</th><th>Where it appears</th><th>Dimensions — you'll derive these</th></tr>
+    <tr><td class="sym">\(\sigma\)</td><td>Stefan–Boltzmann constant</td><td>Thermal radiation: \(P/A=\sigma\,T^4\)</td><td style="color:#bbb; font-style:italic;">Part A</td></tr>
+    <tr><td class="sym">\(k_B\)</td><td>Boltzmann constant</td><td>Gas law: \(PV = Nk_BT\)</td><td style="color:#bbb; font-style:italic;">Part B</td></tr>
+    <tr><td class="sym">\(R_\infty\)</td><td>Rydberg constant</td><td>Hydrogen spectrum: \(1/\lambda = R_\infty(\dots)\)</td><td style="color:#bbb; font-style:italic;">Part C</td></tr>
+    <tr><td class="sym">\(G\)</td><td>Gravitational constant</td><td>Gravity: \(F = GMm/r^2\)</td><td style="color:#bbb; font-style:italic;">Part D</td></tr>
+    <tr><td class="sym">\(h\)</td><td>Planck's constant</td><td>Quantum energy: \(E = hf\)</td><td style="color:#bbb; font-style:italic;">Part E</td></tr>
+    <tr><td class="sym">\(H_0\)</td><td>Hubble constant</td><td>Expanding universe: \(v = H_0\,d\)</td><td style="color:#bbb; font-style:italic;">Part F</td></tr>
+  </table>
+  <div class="caption" style="text-align:center;">Your roadmap. By the end, you will know every one of these dimensions — and what happens when you combine them.</div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART 0 — PREREQUISITE TOOLKIT -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Toolkit</div>
+  <h2>Prerequisite Skills: Exponents &amp; Simultaneous Equations</h2>
+</div>
+
+<p>Before we touch any physics, let's make sure two algebraic tools are sharp. You'll use both on every page that follows.</p>
+
+<!-- ── EXPONENTS ── -->
+<div class="preamble toolkit">
+  <h3>The laws of exponents</h3>
+  <p>
+    Dimensional analysis treats units as algebraic symbols raised to powers. The rules below are the complete toolkit you need.
+  </p>
+  <div class="law-grid">
+    <div class="law-card">
+      <div class="law-name">Multiplication</div>
+      <div class="law-eq">\(x^a \cdot x^b = x^{a+b}\)</div>
+    </div>
+    <div class="law-card">
+      <div class="law-name">Division</div>
+      <div class="law-eq">\(\dfrac{x^a}{x^b} = x^{a-b}\)</div>
+    </div>
+    <div class="law-card">
+      <div class="law-name">Power of a power</div>
+      <div class="law-eq">\((x^a)^n = x^{an}\)</div>
+    </div>
+    <div class="law-card">
+      <div class="law-name">Negative exponent</div>
+      <div class="law-eq">\(x^{-a} = \dfrac{1}{x^a}\)</div>
+    </div>
+    <div class="law-card">
+      <div class="law-name">Fractional exponent</div>
+      <div class="law-eq">\(x^{1/n} = \sqrt[n]{x}\)</div>
+    </div>
+    <div class="law-card">
+      <div class="law-name">Zero exponent</div>
+      <div class="law-eq">\(x^0 = 1\)</div>
+    </div>
+  </div>
+
+  <p>
+    <strong>Example with units.</strong> Velocity has dimensions \(\text{L}\,\text{T}^{-1}\). Acceleration is \(\text{L}\,\text{T}^{-2}\). Their ratio is:
+  </p>
+  <div class="eq">\(\dfrac{[\text{velocity}]}{[\text{acceleration}]} = \dfrac{\text{L}\,\text{T}^{-1}}{\text{L}\,\text{T}^{-2}} = \text{L}^{1-1}\,\text{T}^{-1-(-2)} = \text{T}^{1} = \text{T}\)</div>
+  <p>— the dimensions of <em>time</em>. This makes physical sense: velocity ÷ acceleration = time.</p>
+</div>
+
+<div class="task">
+  <div class="task-label">Toolkit Task 1</div>
+  <h4>Quick exponent practice</h4>
+  <ol>
+    <li>Simplify \(\text{L}^3 \cdot \text{L}^{-1} \cdot \text{T}^{-2} \cdot \text{T}^{-1}\).</li>
+    <li>If \([x] = \text{L}^2\text{T}^{-3}\), find \([x^{1/2}]\) and \([x^{-1}]\).</li>
+    <li>Show that \(\bigl(\text{L}\,\text{T}^{-2}\bigr)^{1/2} = \text{L}^{1/2}\,\text{T}^{-1}\).</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="medium" placeholder="Apply the exponent laws step by step…"></textarea>
+  </div>
+</div>
+
+<!-- ── SIMULTANEOUS EQUATIONS ── -->
+<div class="preamble toolkit">
+  <h3>Solving simultaneous equations — by algebra and by graph</h3>
+  <p>A pair of linear equations in two unknowns can be solved in two complementary ways. You should be comfortable with both.</p>
+
+  <p><strong>Method 1 — Algebraic elimination.</strong> Given:</p>
+  <div class="eq">\(2x + y = 7 \qquad \text{and} \qquad -x + 3y = 8\)</div>
+  <p>Multiply the second equation by 2 to make the \(x\)-coefficients match in magnitude:</p>
+  <div class="eq">\(-2x + 6y = 16\)</div>
+  <p>Add to the first: \((2x - 2x) + (y + 6y) = 7 + 16\), giving \(7y = 23\), so \(y = 23/7\). Back-substitute: \(x = (7 - 23/7)/2 = 13/7\).</p>
+
+  <p style="margin-top:1rem;"><strong>Method 2 — Graphical (coordinate) interpretation.</strong> Each equation is a straight line on the \(xy\)-plane. Their intersection point is the solution.</p>
+</div>
+
+<!-- SVG: two lines intersecting -->
+<div class="diagram-container">
+  <svg viewBox="-0.5 -0.5 9 8.5" width="380" height="360" xmlns="http://www.w3.org/2000/svg" style="font-family:'Source Serif 4',serif;">
+    <!-- Axes -->
+    <line x1="0" y1="7.5" x2="8.5" y2="7.5" stroke="#aaa" stroke-width="0.04"/>
+    <line x1="0.5" y1="0" x2="0.5" y2="7.5" stroke="#aaa" stroke-width="0.04"/>
+    <!-- Axis labels -->
+    <text x="8.2" y="7.2" font-size="0.5" fill="#888" font-style="italic">x</text>
+    <text x="0.15" y="0.4" font-size="0.5" fill="#888" font-style="italic">y</text>
+    <!-- Grid ticks -->
+    <line x1="0.5" y1="7.5" x2="0.5" y2="7.7" stroke="#aaa" stroke-width="0.03"/>
+    <text x="0.35" y="8.1" font-size="0.38" fill="#aaa">0</text>
+    <line x1="2.5" y1="7.4" x2="2.5" y2="7.6" stroke="#aaa" stroke-width="0.03"/>
+    <text x="2.35" y="8.1" font-size="0.38" fill="#aaa">2</text>
+    <line x1="4.5" y1="7.4" x2="4.5" y2="7.6" stroke="#aaa" stroke-width="0.03"/>
+    <text x="4.35" y="8.1" font-size="0.38" fill="#aaa">4</text>
+    <!-- Line 1: 2x + y = 7 → y = 7 - 2x → at x=0 y=7; x=3.5 y=0 -->
+    <!-- Plotting: x=0→y=7→(0.5, 0.5), x=3.5→y=0→(4.0, 7.5) -->
+    <line x1="0.5" y1="0.5" x2="4.5" y2="7.5" stroke="var(--accent2)" stroke-width="0.07"/>
+    <text x="1.0" y="0.5" font-size="0.42" fill="var(--accent2)">2x + y = 7</text>
+    <!-- Line 2: -x + 3y = 8 → y = (8+x)/3 → at x=0 y=8/3≈2.67; x=7 y=5 -->
+    <!-- Plotting: x=0→y=2.67→(0.5, 7.5-2.67=4.83), x=7→y=5→(7.5, 7.5-5=2.5) -->
+    <line x1="0.5" y1="4.83" x2="7.5" y2="2.5" stroke="var(--accent)" stroke-width="0.07"/>
+    <text x="5.5" y="2.3" font-size="0.42" fill="var(--accent)">−x + 3y = 8</text>
+    <!-- Intersection at x=13/7≈1.857, y=23/7≈3.286 → plot (0.5+1.857, 7.5-3.286)=(2.357, 4.214) -->
+    <circle cx="2.36" cy="4.21" r="0.15" fill="none" stroke="var(--accent3)" stroke-width="0.07"/>
+    <circle cx="2.36" cy="4.21" r="0.06" fill="var(--accent3)"/>
+    <text x="2.7" y="3.8" font-size="0.4" fill="var(--accent3)">(13⁄7, 23⁄7)</text>
+  </svg>
+  <div class="caption">Two lines meet at a single point — the solution to both equations. Every simultaneous-equation problem in this worksheet can be pictured this way.</div>
+</div>
+
+<div class="task">
+  <div class="task-label">Toolkit Task 2</div>
+  <h4>Practice: solve a pair of equations</h4>
+  <p>Solve by elimination:</p>
+  <div class="eq">\(3x + 2y = 12 \qquad \text{and} \qquad x - y = 1\)</div>
+  <ol>
+    <li>Solve algebraically. Show your elimination steps.</li>
+    <li>Sketch both lines on axes (you can use the grid below or rough axes). Mark the intersection point.</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Algebraic working</div>
+    <textarea class="medium" placeholder="Eliminate one variable…"></textarea>
+  </div>
+  <div class="answer-area">
+    <div class="answer-area-label">Sketch / coordinates</div>
+    <textarea class="medium" placeholder="Describe or note your sketch here…"></textarea>
+  </div>
+  <details>
+    <summary>Hint</summary>
+    <div class="hint-content">From the second equation, \(x = 1 + y\). Substitute into the first: \(3(1+y) + 2y = 12\).</div>
+  </details>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART A — HOMOGENEITY: PERIOD OF A SPRING -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part A</div>
+  <h2>The Main Idea: Homogeneity of Dimensions</h2>
+</div>
+
+<div class="preamble">
+  <h3>Why units must balance — the period of an oscillating spring</h3>
+  <p>
+    Hang a mass \(m\) from a spring, pull it down, and let go. It bounces up and down with a period \(T\) — the time for one complete oscillation. Experiments show that the period depends on the mass and the spring constant \(k\) (a measure of stiffness, in newtons per metre). The formula is:
+  </p>
+  <div class="eq-box">\(T = 2\pi\sqrt{\dfrac{m}{k}}\)</div>
+  <p>
+    Let's check this using dimensional analysis. The principle of <strong>homogeneity</strong> says: <em>both sides of any valid equation must have the same dimensions</em>.
+  </p>
+  <p>
+    The left side has dimensions \([\,T\,] = \text{T}\) (time). Let's check the right. First: what are the dimensions of the spring constant \(k\)?
+  </p>
+  <p>
+    Since \(F = kx\), with \([F] = \text{M}\text{L}\text{T}^{-2}\) and \([x] = \text{L}\):
+  </p>
+  <div class="eq">\([k] = \dfrac{[F]}{[x]} = \dfrac{\text{M}\text{L}\text{T}^{-2}}{\text{L}} = \text{M}\text{T}^{-2}\)</div>
+  <p>Now check the right side of the period formula:</p>
+  <div class="eq">\(\left[\sqrt{\dfrac{m}{k}}\right] = \left(\dfrac{\text{M}}{\text{M}\text{T}^{-2}}\right)^{1/2} = \left(\text{T}^{2}\right)^{1/2} = \text{T}\quad\checkmark\)</div>
+  <p>
+    Both sides give \(\text{T}\). The equation is dimensionally consistent. Notice that the \(2\pi\) is invisible to dimensional analysis — it's a pure number. Dimensional analysis gets the <em>shape</em> of the formula but not numerical coefficients.
+  </p>
+</div>
+
+<div class="task">
+  <div class="task-label">Task A1</div>
+  <h4>Your turn: check the pendulum formula</h4>
+  <p>A simple pendulum has period \(T = 2\pi\sqrt{L/g}\), where \(L\) is the string length and \(g\) is gravitational acceleration.</p>
+  <ol>
+    <li>Write down \([L]\) and \([g]\).</li>
+    <li>Show that \(\sqrt{L/g}\) has dimensions of time.</li>
+    <li>Could the formula be \(T = 2\pi\sqrt{g/L}\) instead? Check the dimensions and explain why not.</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="[L] = …&#10;[g] = …&#10;[L/g] = …"></textarea>
+  </div>
+</div>
+
+<div class="task">
+  <div class="task-label">Task A2</div>
+  <h4>Pressure is force per area</h4>
+  <p>Given \([F] = \text{M}\text{L}\text{T}^{-2}\), show that the dimensions of pressure are \([P] = \text{M}\text{L}^{-1}\text{T}^{-2}\).</p>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="short" placeholder="[P] = [F] / [A] = …"></textarea>
+  </div>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART B — STEFAN-BOLTZMANN -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part B</div>
+  <h2>Hot Objects Glow: The Stefan–Boltzmann Law</h2>
+</div>
+
+<div class="preamble thermo">
+  <h3>The story of thermal radiation</h3>
+  <p>
+    Hold your hand near a campfire and you feel heat — not from the air, but from invisible <strong>infrared radiation</strong> streaming out of the flames. Every warm object radiates energy: the coils of a toaster glow red, the filament of an old light-bulb glows white, and even your own body radiates in the infrared, which is how thermal cameras see you in the dark.
+  </p>
+  <p>
+    In 1879, <strong>Josef Stefan</strong> measured how much total power a hot object radiates and found a striking rule: the power per unit area goes as the <em>fourth power</em> of temperature. His student <strong>Ludwig Boltzmann</strong> later derived the result from thermodynamics:
+  </p>
+  <div class="eq-box">\(\dfrac{P}{A} = \sigma\, T^4\)</div>
+  <p>
+    Here \(P\) is radiated power (watts), \(A\) is surface area, \(T\) is absolute temperature in kelvin, and \(\sigma\) is the <strong>Stefan–Boltzmann constant</strong>. The fourth-power dependence is dramatic: double the temperature and the radiated power leaps by a factor of \(2^4 = 16\). This is why a steel furnace at 2000 K vastly out-glows a warm radiator at 350 K.
+  </p>
+</div>
+
+<div class="aside-note">
+  <strong>Recall:</strong> Power = energy per time, so \([P] = [\text{energy}]/[\text{time}] = \text{M}\text{L}^2\text{T}^{-3}\). You will need this.
+</div>
+
+<div class="task">
+  <div class="task-label">Task B1</div>
+  <h4>Find the dimensions of \(\sigma\)</h4>
+  <p>Rearrange \(P/A = \sigma\,T^4\) to isolate \(\sigma\), then substitute dimensions.</p>
+  <ol>
+    <li>Rearrange for \(\sigma\).</li>
+    <li>Write the dimensions of \(P\), \(A\), and \(T^4\).</li>
+    <li>Combine and simplify. You should get \([\sigma] = \text{M}\text{T}^{-3}\Theta^{-4}\).</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="σ = P / (A · T⁴)&#10;[σ] = …"></textarea>
+  </div>
+  <details>
+    <summary>Check</summary>
+    <div class="hint-content">The SI value is \(\sigma \approx 5.67 \times 10^{-8}\;\text{W m}^{-2}\text{K}^{-4}\). Do the SI units match your dimensional result?</div>
+  </details>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART C — GAS LAW & BOLTZMANN CONSTANT -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part C</div>
+  <h2>Molecules in Motion: The Gas Law &amp; Boltzmann's Constant</h2>
+</div>
+
+<div class="preamble thermo">
+  <h3>From steam engines to fundamental constants</h3>
+  <p>
+    The ideal gas law connects pressure, volume, and temperature:
+  </p>
+  <div class="eq-box">\(PV = nRT = Nk_B T\)</div>
+  <p>
+    Here \(n\) is the number of moles, \(R\) is the universal gas constant, \(N\) is the total number of molecules (a pure number — <em>no units</em>), and \(k_B\) is the <strong>Boltzmann constant</strong>. Boltzmann's constant bridges the macroscopic world of pressure gauges and the microscopic world of individual molecules: the average kinetic energy of a single molecule is \(\tfrac{3}{2}\,k_B T\).
+  </p>
+  <p>
+    Since \(N\) is dimensionless, the product \(Nk_B T\) must have the same dimensions as \(PV\). This constraint alone pins down the units of \(k_B\).
+  </p>
+</div>
+
+<div class="task">
+  <div class="task-label">Task C1</div>
+  <h4>Dimensions of \(k_B\)</h4>
+  <p>Given: \([P] = \text{M}\text{L}^{-1}\text{T}^{-2}\), \([V] = \text{L}^3\), \([T_\text{temp}] = \Theta\), and \([N] = 1\).</p>
+  <ol>
+    <li>Find \([PV]\).</li>
+    <li>From \(PV = Nk_B T\), rearrange to find \([k_B]\).</li>
+    <li>Show that \([k_B] = \text{M}\text{L}^2\text{T}^{-2}\Theta^{-1}\).</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="medium" placeholder="[PV] = …&#10;[k_B] = [PV] / [T] = …"></textarea>
+  </div>
+</div>
+
+<div class="task">
+  <div class="task-label">Task C2</div>
+  <h4>The gas constant \(R\)</h4>
+  <p>In \(PV = nRT\), the quantity \(n\) is measured in moles. Treating "mole" as a unit, find \([R]\) and explain why \(R = N_A \cdot k_B\) where \(N_A\) is Avogadro's number.</p>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="short" placeholder="[R] = …"></textarea>
+  </div>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART D — RYDBERG CONSTANT -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part D</div>
+  <h2>Light from Atoms: The Rydberg Constant</h2>
+</div>
+
+<div class="preamble quantum">
+  <h3>Why hydrogen glows in colour</h3>
+  <p>
+    Pass an electric current through a tube of hydrogen gas and it glows with a distinctive pink-violet light. Viewed through a prism, this glow breaks into a series of sharp, discrete lines at very specific wavelengths — <em>not</em> a continuous rainbow. In 1888, <strong>Johannes Rydberg</strong> discovered that every wavelength obeyed a single formula:
+  </p>
+  <div class="eq-box">\(\dfrac{1}{\lambda} = R_\infty\!\left(\dfrac{1}{n_1^2} - \dfrac{1}{n_2^2}\right)\)</div>
+  <p>
+    Here \(\lambda\) is the wavelength, \(n_1\) and \(n_2\) are positive integers with \(n_2 > n_1\), and \(R_\infty\) is the <strong>Rydberg constant</strong>. The bracket is a pure number, so the dimensions of \(R_\infty\) are entirely determined by what sits on the left side.
+  </p>
+</div>
+
+<div class="task">
+  <div class="task-label">Task D1</div>
+  <h4>Dimensions of \(R_\infty\)</h4>
+  <ol>
+    <li>What are the dimensions of \(1/\lambda\)?</li>
+    <li>Hence, what is \([R_\infty]\)?</li>
+    <li>The SI value is \(R_\infty \approx 1.097 \times 10^7\;\text{m}^{-1}\). Does this match?</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="short" placeholder="[1/λ] = …"></textarea>
+  </div>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART E — GRAVITATIONAL CONSTANT G -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part E</div>
+  <h2>The Force Between Worlds: Newton's \(G\)</h2>
+</div>
+
+<div class="preamble gravity">
+  <h3>Gravity and the gravitational constant</h3>
+  <p>
+    Newton's law of universal gravitation says that every pair of masses attracts each other:
+  </p>
+  <div class="eq-box">\(F = \dfrac{G\,M\,m}{r^2}\)</div>
+  <p>
+    Here \(F\) is force, \(M\) and \(m\) are two masses, \(r\) is the distance between their centres, and \(G\) is the <strong>gravitational constant</strong>. \(G\) is extraordinarily small — about \(6.67 \times 10^{-11}\) in SI units — which is why gravity is by far the weakest of the fundamental forces. You need planet-sized masses to feel it strongly.
+  </p>
+</div>
+
+<!-- DIAGRAM instead of worked example -->
+<div class="diagram-container">
+  <svg viewBox="0 0 420 180" width="420" height="180" xmlns="http://www.w3.org/2000/svg" style="font-family:'Source Serif 4',serif;">
+    <!-- Mass M -->
+    <circle cx="80" cy="90" r="32" fill="#2c3e80" opacity="0.15" stroke="#2c3e80" stroke-width="1.5"/>
+    <text x="80" y="95" text-anchor="middle" font-size="18" fill="#2c3e80" font-style="italic">M</text>
+    <!-- Mass m -->
+    <circle cx="320" cy="90" r="20" fill="#c0392b" opacity="0.15" stroke="#c0392b" stroke-width="1.5"/>
+    <text x="320" y="95" text-anchor="middle" font-size="18" fill="#c0392b" font-style="italic">m</text>
+    <!-- Distance arrow -->
+    <line x1="112" y1="140" x2="300" y2="140" stroke="#555" stroke-width="1.2"/>
+    <polygon points="112,137 118,140 112,143" fill="#555"/>
+    <polygon points="300,137 294,140 300,143" fill="#555"/>
+    <text x="206" y="158" text-anchor="middle" font-size="14" fill="#555" font-style="italic">r</text>
+    <!-- Force arrows -->
+    <line x1="145" y1="90" x2="175" y2="90" stroke="#2c3e80" stroke-width="2" marker-end="url(#arrowBlue)"/>
+    <line x1="275" y1="90" x2="245" y2="90" stroke="#c0392b" stroke-width="2" marker-end="url(#arrowRed)"/>
+    <!-- labels -->
+    <text x="172" y="80" font-size="13" fill="#2c3e80" font-style="italic">F</text>
+    <text x="240" y="80" font-size="13" fill="#c0392b" font-style="italic">F</text>
+    <!-- Formula reminder -->
+    <text x="210" y="28" text-anchor="middle" font-size="15" fill="#444" font-style="italic">F = GMm/r²</text>
+    <!-- Arrow markers -->
+    <defs>
+      <marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0,0 8,3 0,6" fill="#2c3e80"/>
+      </marker>
+      <marker id="arrowRed" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0,0 8,3 0,6" fill="#c0392b"/>
+      </marker>
+    </defs>
+  </svg>
+  <div class="caption">Two masses attracting each other. The force depends on both masses and the square of the distance. Your job: find the dimensions of \(G\).</div>
+</div>
+
+<div class="task">
+  <div class="task-label">Task E1</div>
+  <h4>Derive \([G]\) from Newton's law</h4>
+  <ol>
+    <li>Rearrange \(F = GMm/r^2\) to make \(G\) the subject.</li>
+    <li>Write the dimensions of every quantity on the right-hand side.</li>
+    <li>Combine and simplify to find \([G]\).</li>
+    <li>The SI value is \(6.674 \times 10^{-11}\;\text{m}^3\,\text{kg}^{-1}\,\text{s}^{-2}\). Verify your dimensional answer matches these units.</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="G = …&#10;[G] = …"></textarea>
+  </div>
+  <details>
+    <summary>Hint</summary>
+    <div class="hint-content">Rearrange: \(G = Fr^2/(Mm)\). You know \([F]\), \([r^2]\), and \([Mm]\). What happens to M in the numerator vs. denominator?</div>
+  </details>
+</div>
+
+<div class="task">
+  <div class="task-label">Task E2</div>
+  <h4>Gravitational potential energy check</h4>
+  <p>The gravitational potential energy is \(U = -GMm/r\). Show that \([U]\) has dimensions of energy, i.e. \(\text{M}\text{L}^2\text{T}^{-2}\). Use your result for \([G]\) from above.</p>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="medium" placeholder="[U] = [G][M][m]/[r] = …"></textarea>
+  </div>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART F — PLANCK'S CONSTANT -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part F</div>
+  <h2>Quanta of Light: Planck's Constant \(h\)</h2>
+</div>
+
+<div class="preamble quantum">
+  <h3>The birth of quantum mechanics</h3>
+  <p>
+    In 1900, Max Planck resolved the "ultraviolet catastrophe" — classical physics' prediction that hot objects should radiate infinite energy at short wavelengths — by proposing that light energy comes in discrete packets:
+  </p>
+  <div class="eq-box">\(E = hf\)</div>
+  <p>
+    Here \(f\) is the frequency of light (oscillations per second) and \(h\) is <strong>Planck's constant</strong> — the fundamental quantum of action. It is tiny, about \(6.63 \times 10^{-34}\;\text{J·s}\), which is why quantum effects are invisible in everyday life. Notice the connection to Part B: Planck's hypothesis was invented <em>precisely</em> to explain the Stefan–Boltzmann law and the shape of the thermal radiation spectrum.
+  </p>
+</div>
+
+<div class="task">
+  <div class="task-label">Task F1</div>
+  <h4>Dimensions of Planck's constant</h4>
+  <ol>
+    <li>Write down the dimensions of energy \(E\).</li>
+    <li>Frequency \(f\) is "oscillations per second." What are its dimensions?</li>
+    <li>Rearrange \(E = hf\) and find \([h]\). Show it equals \(\text{M}\text{L}^2\text{T}^{-1}\).</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="medium" placeholder="[E] = …&#10;[f] = …&#10;[h] = …"></textarea>
+  </div>
+</div>
+
+<div class="aside-note">
+  <strong>Units of "action."</strong> Planck's constant has dimensions of energy × time, which physicists call <em>action</em>. The principle of least action — the idea that nature chooses paths that extremise action — is the deepest formulation of all classical and quantum mechanics.
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART G — HUBBLE'S LAW -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part G</div>
+  <h2>The Expanding Universe: Hubble's Law</h2>
+</div>
+
+<div class="preamble cosmos">
+  <h3>Every galaxy is racing away from us</h3>
+  <p>
+    In 1929, Edwin Hubble made one of the most profound discoveries in science. By measuring light from distant galaxies, he found that their spectral lines were shifted to the red — they were moving <em>away</em> from us. More astonishingly, the further away a galaxy was, the faster it receded:
+  </p>
+  <div class="eq-box">\(v = H_0\,d\)</div>
+  <p>
+    Here \(v\) is the recession velocity, \(d\) is the distance to the galaxy, and \(H_0\) is the <strong>Hubble constant</strong>. This means the universe is <em>expanding</em> — space itself is stretching.
+  </p>
+  <p>
+    Astronomers measure distances in units suited to each scale:
+  </p>
+</div>
+
+<div class="figure-box" style="text-align:left;">
+  <table class="constants-table">
+    <tr><th>Unit</th><th>Abbreviation</th><th>Value in metres</th><th>Context</th></tr>
+    <tr><td>Astronomical Unit</td><td class="sym">AU</td><td>\(1.50 \times 10^{11}\)</td><td>Earth–Sun distance</td></tr>
+    <tr><td>Light-year</td><td class="sym">ly</td><td>\(9.46 \times 10^{15}\)</td><td>Distance light travels in one year</td></tr>
+    <tr><td>Parsec</td><td class="sym">pc</td><td>\(3.09 \times 10^{16}\)</td><td>Based on parallax angle</td></tr>
+    <tr><td>Megaparsec</td><td class="sym">Mpc</td><td>\(3.09 \times 10^{22}\)</td><td>Intergalactic distances</td></tr>
+  </table>
+</div>
+
+<div class="task">
+  <div class="task-label">Task G1</div>
+  <h4>Dimensions of the Hubble constant</h4>
+  <ol>
+    <li>From \(v = H_0\,d\), show that \([H_0] = \text{T}^{-1}\).</li>
+    <li>The quoted value is 70 km s⁻¹ Mpc⁻¹. Explain why "km per second per megaparsec" is equivalent to "per second" once you convert Mpc to km.</li>
+    <li>The <strong>Hubble time</strong> is \(1/H_0\). Estimate its value in seconds, then convert to billions of years. What does it approximate?</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="[H₀] = [v]/[d] = …&#10;&#10;Convert: 1 Mpc = … km&#10;H₀ = 70 / … = … s⁻¹&#10;1/H₀ = … s ≈ … billion years"></textarea>
+  </div>
+  <details>
+    <summary>Hint</summary>
+    <div class="hint-content">1 Mpc ≈ 3.09 × 10¹⁹ km. So \(H_0 \approx 70 / (3.09 \times 10^{19}) \approx 2.27 \times 10^{-18}\;\text{s}^{-1}\). Invert and divide by \(3.15 \times 10^7\) (seconds per year) then by \(10^9\).</div>
+  </details>
+</div>
+
+<div class="task">
+  <div class="task-label">Task G2</div>
+  <h4>Cosmic density from \(H\) and \(G\) — a matrix problem</h4>
+  <p>Suppose the average density of the universe \(\rho\) depends only on \(H_0\) and \(G\):</p>
+  <div class="eq">\(\rho \sim H_0^{\,a}\;G^{\,b}\)</div>
+  <p>Given \([\rho] = \text{M}\text{L}^{-3}\), \([H_0] = \text{T}^{-1}\), \([G] = \text{M}^{-1}\text{L}^3\text{T}^{-2}\):</p>
+  <ol>
+    <li>Write the dimensional equation and match powers of M, L, and T to get simultaneous equations in \(a\) and \(b\).</li>
+    <li>Solve for \(a\) and \(b\).</li>
+    <li>Write the result as a matrix equation, using the template below. Fill in the coefficients:</li>
+  </ol>
+
+  <!-- Editable matrix -->
+  <div class="matrix-eq" style="margin: 1rem 0;">
+    <div class="matrix m2x2">
+      <input class="cell-input" type="text" placeholder="?" aria-label="row 1 col 1">
+      <input class="cell-input" type="text" placeholder="?" aria-label="row 1 col 2">
+      <input class="cell-input" type="text" placeholder="?" aria-label="row 2 col 1">
+      <input class="cell-input" type="text" placeholder="?" aria-label="row 2 col 2">
+    </div>
+    <div class="matrix m2x1">
+      <div class="cell" style="font-style:italic;">a</div>
+      <div class="cell" style="font-style:italic;">b</div>
+    </div>
+    <div class="matrix-op">=</div>
+    <div class="matrix m2x1">
+      <input class="cell-input" type="text" placeholder="?" aria-label="result 1">
+      <input class="cell-input" type="text" placeholder="?" aria-label="result 2">
+    </div>
+  </div>
+
+  <ol start="4">
+    <li>Hence show that \(\rho \sim H_0^2/G\). This is (up to a factor of \(3/8\pi\)) the <strong>critical density of the universe</strong>.</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="Matching M: …&#10;Matching L: …&#10;Matching T: …"></textarea>
+  </div>
+  <details>
+    <summary>Hint</summary>
+    <div class="hint-content">\(\text{M}: -b = 1\), \(\text{L}: 3b = -3\), \(\text{T}: -a - 2b = 0\). The first two both give \(b = -1\). The third gives \(a = 2\).</div>
+  </details>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART H — BLACK HOLES & PLANCK LENGTH -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part H</div>
+  <h2>When Light Cannot Escape: Black Holes &amp; the Planck Length</h2>
+</div>
+
+<div class="preamble cosmos">
+  <h3>From escape velocity to the event horizon</h3>
+  <p>
+    Throw a ball upward and gravity pulls it back. Throw it faster and it goes higher. At a critical speed — the <strong>escape velocity</strong> — the ball never returns. For the Earth's surface, this is about 11.2 km/s.
+  </p>
+  <p>
+    Now imagine compressing an object until its escape velocity reaches the speed of light, \(c \approx 3 \times 10^8\;\text{m/s}\). Beyond that point, <em>nothing</em> — not even light — can escape. The boundary is called the <strong>event horizon</strong>, and the object inside is a <strong>black hole</strong>.
+  </p>
+</div>
+
+<div class="task">
+  <div class="task-label">Task H1</div>
+  <h4>Deriving the Schwarzschild radius</h4>
+  <p>Start from energy conservation: \(\tfrac{1}{2}mv^2 = GMm/r\).</p>
+  <ol>
+    <li>Cancel \(m\) and solve for \(r\).</li>
+    <li>Set \(v = c\). Show that \(r_s \sim GM/c^2\).</li>
+    <li>Verify the dimensions: \([r_s] = \text{L}\).</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="½v² = GM/r&#10;r = …&#10;Set v = c: r_s = …&#10;Check: [G][M]/[c²] = …"></textarea>
+  </div>
+</div>
+
+<div class="preamble quantum">
+  <h3>Quantum meets gravity: the Compton wavelength</h3>
+  <p>
+    Quantum mechanics assigns a wavelength to every particle. From Einstein's \(E = mc^2\) and Planck's \(E = hf = hc/\lambda\), equating gives the <strong>Compton wavelength</strong>:
+  </p>
+  <div class="eq-box">\(\lambda_C \sim \dfrac{h}{mc}\)</div>
+  <p>This is the length scale at which quantum effects dominate for a particle of mass \(m\).</p>
+</div>
+
+<div class="task">
+  <div class="task-label">Task H2</div>
+  <h4>The Planck length — where gravity meets the quantum</h4>
+  <p>Now multiply the Schwarzschild radius by the Compton wavelength for the <em>same</em> mass (\(M = m\)):</p>
+  <ol>
+    <li>Compute \(r_s \times \lambda_C\) and show that the mass cancels, giving \(Gh/c^3\).</li>
+    <li>Verify that \([Gh/c^3] = \text{L}^2\) by substituting dimensions.</li>
+    <li>The square root defines the <strong>Planck length</strong>, \(\ell_P = \sqrt{Gh/c^3} \approx 10^{-35}\;\text{m}\). This is the scale where quantum gravity effects dominate.</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="r_s × λ_C = (GM/c²)(h/mc) = …&#10;&#10;Dimension check:&#10;[G] = …, [h] = …, [c³] = …&#10;[Gh/c³] = …"></textarea>
+  </div>
+  <details>
+    <summary>Hint</summary>
+    <div class="hint-content">\([Gh] = \text{M}^{-1}\text{L}^3\text{T}^{-2} \times \text{M}\text{L}^2\text{T}^{-1} = \text{L}^5\text{T}^{-3}\). Divide by \([c^3] = \text{L}^3\text{T}^{-3}\) to get \(\text{L}^2\).</div>
+  </details>
+</div>
+
+<div class="aside-note">
+  <strong>A deep message.</strong> The Planck length emerged from <em>pure algebra</em> — no differential equations, no calculus. Dimensional analysis alone reveals where our current theories of gravity and quantum mechanics must break down.
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART I — UNIT CIRCLE & LINE INTERCEPT -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part I</div>
+  <h2>Geometry Meets Algebra: The Unit Circle &amp; Straight Lines</h2>
+</div>
+
+<div class="preamble geometry">
+  <h3>Where circles meet lines</h3>
+  <p>
+    The <strong>unit circle</strong> is the set of all points at distance 1 from the origin:
+  </p>
+  <div class="eq-box">\(x^2 + y^2 = 1\)</div>
+  <p>
+    Every point on it can be written \((\cos\theta,\;\sin\theta)\). A <strong>straight line</strong> in slope-intercept form is \(y = mx + c\). Finding where these meet is a simultaneous-equation problem: substitute one into the other and solve the resulting quadratic. The number of solutions (0, 1, or 2) tells you whether the line misses, is tangent to, or cuts through the circle.
+  </p>
+  <p>
+    This connects directly to physics: finding where two trajectories meet (rocket intercepts planet) is the same algebra.
+  </p>
+</div>
+
+<div class="diagram-container">
+  <svg viewBox="-1.8 -1.8 3.6 3.6" width="320" height="320" xmlns="http://www.w3.org/2000/svg" style="font-family:'Source Serif 4',serif;">
+    <!-- Grid -->
+    <line x1="-1.6" y1="0" x2="1.6" y2="0" stroke="#ccc" stroke-width="0.01"/>
+    <line x1="0" y1="-1.6" x2="0" y2="1.6" stroke="#ccc" stroke-width="0.01"/>
+    <!-- Tick marks -->
+    <line x1="1" y1="-0.05" x2="1" y2="0.05" stroke="#aaa" stroke-width="0.015"/>
+    <text x="1" y="0.2" text-anchor="middle" font-size="0.13" fill="#aaa">1</text>
+    <line x1="-1" y1="-0.05" x2="-1" y2="0.05" stroke="#aaa" stroke-width="0.015"/>
+    <text x="-1" y="0.2" text-anchor="middle" font-size="0.13" fill="#aaa">−1</text>
+    <line x1="-0.05" y1="1" x2="0.05" y2="1" stroke="#aaa" stroke-width="0.015"/>
+    <text x="0.15" y="1.05" font-size="0.13" fill="#aaa">1</text>
+    <line x1="-0.05" y1="-1" x2="0.05" y2="-1" stroke="#aaa" stroke-width="0.015"/>
+    <text x="0.18" y="-0.95" font-size="0.13" fill="#aaa">−1</text>
+    <!-- Unit circle -->
+    <circle cx="0" cy="0" r="1" fill="none" stroke="#2c3e80" stroke-width="0.025"/>
+    <!-- Line y = x -->
+    <line x1="-1.3" y1="-1.3" x2="1.3" y2="1.3" stroke="#c0392b" stroke-width="0.02" stroke-dasharray="0.06,0.04"/>
+    <!-- Intersection points: (1/√2, 1/√2) and (-1/√2, -1/√2) -->
+    <circle cx="0.707" cy="0.707" r="0.05" fill="#c0392b"/>
+    <circle cx="-0.707" cy="-0.707" r="0.05" fill="#c0392b"/>
+    <!-- Labels -->
+    <text x="1.05" y="-0.15" font-size="0.13" fill="#2c3e80" font-style="italic">x² + y² = 1</text>
+    <text x="0.85" y="1.15" font-size="0.13" fill="#c0392b" font-style="italic">y = x</text>
+    <!-- Point labels -->
+    <text x="0.82" y="0.62" font-size="0.11" fill="#c0392b">(1/√2, 1/√2)</text>
+    <text x="-1.55" y="-0.6" font-size="0.11" fill="#c0392b">(−1/√2, −1/√2)</text>
+    <!-- Axis labels -->
+    <text x="1.5" y="0.14" font-size="0.13" fill="#888" font-style="italic">x</text>
+    <text x="0.08" y="-1.5" font-size="0.13" fill="#888" font-style="italic">y</text>
+  </svg>
+  <div class="caption">The line \(y = x\) intersects the unit circle at two points. Finding them requires solving a pair of simultaneous equations.</div>
+</div>
+
+<div class="task">
+  <div class="task-label">Task I1</div>
+  <h4>Line meets circle</h4>
+  <p>Find where the line \(y = 2x - 1\) meets the unit circle \(x^2 + y^2 = 1\).</p>
+  <ol>
+    <li>Substitute \(y = 2x - 1\) into \(x^2 + y^2 = 1\) and expand.</li>
+    <li>Solve the resulting quadratic in \(x\).</li>
+    <li>Find the corresponding \(y\)-values. How many intersection points are there?</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="x² + (2x − 1)² = 1&#10;x² + 4x² − 4x + 1 = 1&#10;5x² − 4x = 0&#10;…"></textarea>
+  </div>
+  <details>
+    <summary>Hint</summary>
+    <div class="hint-content">Factor: \(x(5x - 4) = 0\), giving \(x = 0\) or \(x = 4/5\).</div>
+  </details>
+</div>
+
+<div class="task">
+  <div class="task-label">Task I2</div>
+  <h4>Tangent condition</h4>
+  <p>For what value of \(c\) does the horizontal line \(y = c\) just <em>touch</em> the unit circle (exactly one intersection point)?</p>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="medium" placeholder="Substitute y = c into x² + y² = 1…"></textarea>
+  </div>
+</div>
+
+<div class="task">
+  <div class="task-label">Task I3</div>
+  <h4>Physics intercept: rocket meets planet</h4>
+  <p>A planet is at \(x = 1\;\text{AU}\) at \(t = 0\), moving outward at \(u\) AU/hour: \(x_P = 1 + ut\).</p>
+  <p>A rocket launches from \(x = 0\) at \(t = 0\) with speed \(v\) AU/hour: \(x_R = vt\).</p>
+  <ol>
+    <li>Set \(x_R = x_P\) and show that \((v - u)t = 1\).</li>
+    <li>If \(v = 3u\), substitute and find \(ut\).</li>
+    <li>Write both equations as a matrix equation with unknowns \(u\) and \(t\). Fill in:</li>
+  </ol>
+  <div class="matrix-eq" style="margin: 1rem 0;">
+    <div class="matrix m2x2">
+      <input class="cell-input" type="text" placeholder="?" aria-label="row 1 col 1">
+      <input class="cell-input" type="text" placeholder="?" aria-label="row 1 col 2">
+      <input class="cell-input" type="text" placeholder="?" aria-label="row 2 col 1">
+      <input class="cell-input" type="text" placeholder="?" aria-label="row 2 col 2">
+    </div>
+    <div class="matrix m2x1">
+      <div class="cell" style="font-style:italic;">u</div>
+      <div class="cell" style="font-style:italic;">t</div>
+    </div>
+    <div class="matrix-op">=</div>
+    <div class="matrix m2x1">
+      <input class="cell-input" type="text" placeholder="?" aria-label="result 1">
+      <input class="cell-input" type="text" placeholder="?" aria-label="result 2">
+    </div>
+  </div>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="medium" placeholder="Intercept: (v − u)t = 1, with v = 3u …"></textarea>
+  </div>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PART J — GEOMETRIC MEAN -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Part J</div>
+  <h2>The Geometric Mean: Midpoints on a Log Scale</h2>
+</div>
+
+<div class="preamble">
+  <h3>Bridging vastly different scales</h3>
+  <p>
+    The ordinary (arithmetic) mean of 1 and 100 is 50.5 — biased heavily toward the large number. But on a <em>logarithmic</em> scale, the midpoint between 1 and 100 is 10, because \(\log(1) = 0\), \(\log(100) = 2\), and the midpoint is \(\log = 1 \to 10^1 = 10\). This is the <strong>geometric mean</strong>:
+  </p>
+  <div class="eq-box">\(\text{geometric mean of } A \text{ and } B = \sqrt{A \times B}\)</div>
+  <p>
+    In physics, where quantities span dozens of orders of magnitude, the geometric mean is a far more natural "middle ground."
+  </p>
+</div>
+
+<div class="figure-box">
+  <div class="scale-visual">
+    <div class="scale-dot"><div class="dot"></div>\(10^0 = 1\)</div>
+    <div class="scale-dot highlight"><div class="dot"></div>\(10^1 = \mathbf{10}\)</div>
+    <div class="scale-dot"><div class="dot"></div>\(10^2 = 100\)</div>
+  </div>
+  <div class="caption">On a log scale, 10 sits exactly halfway between 1 and 100.</div>
+</div>
+
+<div class="task">
+  <div class="task-label">Task J1</div>
+  <h4>Geometric mean across scales</h4>
+  <ol>
+    <li>Compute \(\sqrt{1 \times 100}\). Why is it the "midpoint" on a log scale?</li>
+    <li>A human has mass ~70 kg. A proton has mass \(\approx 1.67 \times 10^{-27}\) kg. Compute the geometric mean \(m_\star = \sqrt{70 \times 1.67 \times 10^{-27}}\) kg. What order of magnitude do you get?</li>
+    <li>A typical human cell has mass around \(10^{-12}\) to \(10^{-13}\) kg. Comment on how close your geometric mean is to the cellular scale.</li>
+  </ol>
+  <div class="answer-area">
+    <div class="answer-area-label">Your working</div>
+    <textarea class="tall" placeholder="√(1 × 100) = …&#10;&#10;m★ = √(70 × 1.67 × 10⁻²⁷)&#10;  = √(… × 10⁻²⁵)&#10;  ≈ …"></textarea>
+  </div>
+</div>
+
+<hr class="section-sep">
+
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- COMPLETED DIMENSIONS TABLE -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="part-header">
+  <div class="part-label">Reference</div>
+  <h2>Your Completed Constants Table</h2>
+</div>
+
+<p>Fill in your derived dimensions below. By the end of the worksheet, every row should be complete.</p>
+
+<div class="figure-box" style="text-align:left;">
+  <table class="constants-table">
+    <tr>
+      <th>Symbol</th><th>Name</th><th>Your dimensions (fill in)</th><th>SI value</th>
+    </tr>
+    <tr>
+      <td class="sym">\(\sigma\)</td><td>Stefan–Boltzmann</td>
+      <td><input type="text" style="width:100%;border:none;border-bottom:1.5px dashed #bbb;font-family:'JetBrains Mono',monospace;font-size:0.9rem;padding:0.2rem;background:transparent;color:var(--accent2);" placeholder="MT⁻³Θ⁻⁴ ?"></td>
+      <td>\(5.67 \times 10^{-8}\) W m⁻² K⁻⁴</td>
+    </tr>
+    <tr>
+      <td class="sym">\(k_B\)</td><td>Boltzmann</td>
+      <td><input type="text" style="width:100%;border:none;border-bottom:1.5px dashed #bbb;font-family:'JetBrains Mono',monospace;font-size:0.9rem;padding:0.2rem;background:transparent;color:var(--accent2);" placeholder="ML²T⁻²Θ⁻¹ ?"></td>
+      <td>\(1.38 \times 10^{-23}\) J K⁻¹</td>
+    </tr>
+    <tr>
+      <td class="sym">\(R_\infty\)</td><td>Rydberg</td>
+      <td><input type="text" style="width:100%;border:none;border-bottom:1.5px dashed #bbb;font-family:'JetBrains Mono',monospace;font-size:0.9rem;padding:0.2rem;background:transparent;color:var(--accent2);" placeholder="L⁻¹ ?"></td>
+      <td>\(1.097 \times 10^{7}\) m⁻¹</td>
+    </tr>
+    <tr>
+      <td class="sym">\(G\)</td><td>Gravitational</td>
+      <td><input type="text" style="width:100%;border:none;border-bottom:1.5px dashed #bbb;font-family:'JetBrains Mono',monospace;font-size:0.9rem;padding:0.2rem;background:transparent;color:var(--accent2);" placeholder="M⁻¹L³T⁻² ?"></td>
+      <td>\(6.674 \times 10^{-11}\) m³ kg⁻¹ s⁻²</td>
+    </tr>
+    <tr>
+      <td class="sym">\(h\)</td><td>Planck</td>
+      <td><input type="text" style="width:100%;border:none;border-bottom:1.5px dashed #bbb;font-family:'JetBrains Mono',monospace;font-size:0.9rem;padding:0.2rem;background:transparent;color:var(--accent2);" placeholder="ML²T⁻¹ ?"></td>
+      <td>\(6.626 \times 10^{-34}\) J s</td>
+    </tr>
+    <tr>
+      <td class="sym">\(H_0\)</td><td>Hubble</td>
+      <td><input type="text" style="width:100%;border:none;border-bottom:1.5px dashed #bbb;font-family:'JetBrains Mono',monospace;font-size:0.9rem;padding:0.2rem;background:transparent;color:var(--accent2);" placeholder="T⁻¹ ?"></td>
+      <td>\(\approx 2.3 \times 10^{-18}\) s⁻¹</td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════ PDF EXPORT BUTTON ═══════ -->
+<div class="pdf-btn-container" style="text-align:center; margin: 2.5rem 0 1rem;">
+  <button id="pdfBtn" onclick="savePDF()" style="
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 0.85rem 2.5rem;
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 2px 8px rgba(44, 62, 128, 0.25);
+  " onmouseover="this.style.background='#1e3068'" onmouseout="this.style.background=''"
+     onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1)'">
+    ↓ Save as PDF
+  </button>
+  <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--muted); margin-top:0.6rem; max-width:500px; margin-left:auto; margin-right:auto;">
+    Opens your browser's print dialog. Choose <strong>"Save as PDF"</strong> as the destination.<br>
+    Each Part starts on a new page. Panes will not split across pages. Your typed answers are included.
+  </p>
+</div>
+
+<!-- ════════════════════════════ FOOTER ════════════════════════════ -->
+<footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); text-align: center; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--muted);">
+  <p>Dwight School London · Department of Natural Sciences</p>
+  <p style="margin-top: 0.3rem; font-style: italic;">"The most incomprehensible thing about the universe is that it is comprehensible." — A. Einstein</p>
+</footer>
+
+</div><!-- /main-content -->
+
+<!-- KaTeX auto-render -->
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "\\(", right: "\\)", display: false},
+        {left: "\\[", right: "\\]", display: true}
+      ],
+      throwOnError: false
+    });
+
+    // Set today's date as default
+    const dateInput = document.getElementById('studentDate');
+    if (dateInput && !dateInput.value) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+    }
+  });
+</script>
+
+<script>
+function savePDF() {
+  // Before printing, bake textarea and input values so they appear in print
+  const textareas = document.querySelectorAll('textarea');
+  const allInputs = document.querySelectorAll('input[type="text"], input[type="date"], .cell-input');
+
+  // Create visible mirrors for textareas (browser print often ignores textarea content)
+  const mirrors = [];
+  textareas.forEach(ta => {
+    const mirror = document.createElement('div');
+    mirror.className = 'print-mirror';
+    mirror.style.cssText = `
+      display: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      padding: 0.5rem 0.9rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: #1a1a2e;
+      min-height: ${ta.offsetHeight || 80}px;
+    `;
+    mirror.textContent = ta.value || '';
+    ta.parentNode.insertBefore(mirror, ta.nextSibling);
+    mirrors.push({ mirror, ta });
+  });
+
+  // Bake input values as attributes so they render in print
+  allInputs.forEach(inp => {
+    inp.setAttribute('value', inp.value);
+  });
+
+  // Add the print class to body to trigger mirror visibility
+  document.body.classList.add('printing');
+
+  // Small delay to let DOM update, then trigger print
+  requestAnimationFrame(() => {
+    window.print();
+
+    // Cleanup after print dialog closes
+    // Use both onafterprint and a timeout fallback
+    const cleanup = () => {
+      document.body.classList.remove('printing');
+      mirrors.forEach(({ mirror }) => mirror.remove());
+    };
+
+    window.addEventListener('afterprint', function handler() {
+      cleanup();
+      window.removeEventListener('afterprint', handler);
+    });
+
+    // Fallback for browsers that don't fire afterprint reliably
+    setTimeout(cleanup, 3000);
+  });
+}
+</script>
+</body>
+</html>
